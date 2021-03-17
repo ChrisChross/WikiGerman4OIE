@@ -51,7 +51,7 @@ def get_infobox_data(data):
     """
     dict_list = utils.split_dict_equally(data, N_CORES) # out_dict , preped_data
     ts = time()
-    with Pool(16) as pool:
+    with Pool(N_CORES) as pool:
        train_data = pool.map(prep.prep_data, dict_list)
     duration = (time() - ts)  # / 60
     st.write(str(duration) + " sec" )
@@ -68,7 +68,7 @@ def get_infobox_data(data):
 
 def main():
     st.title("Dataset")
-    data, titles, texts = utils.load_data() # path="data/wiki_dump.pickle"
+    data, titles, texts = utils.load_data() # careful, loads 12 GB of data
     preped_wiki_texts = preprocess_wiki_text(data) # Prep text from Wiki
     preped_infobox_texts = get_infobox_data(preped_wiki_texts) # Get Articles and Infoboxs mapped
     matcher.match(preped_infobox_texts) #match sentences and triple (infobox values) => saving in data as jsonl
