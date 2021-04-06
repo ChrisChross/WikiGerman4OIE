@@ -1,5 +1,8 @@
 import re
 import wptools
+import utils
+from typing import List, Dict, Tuple
+from time import time
 
 ########################
 #### Prep WIKI Text ####
@@ -57,9 +60,7 @@ def find_http(string):
 
 
 def remove_html_tags(text):
-    """
-    Remove html tags from a string
-    """
+    """ Remove html tags from a string. """
     patterns = [('<.*?>(.*?)<.*?>', ''),
                 ('<.*?>.*', ''),
                 ('\[\[', ''),
@@ -89,11 +90,11 @@ def remove_html_tags(text):
 
 
 def wiki_infobox_extractor(page_title=None):
-    """
+    """ Crawls the infoboxs values by title and returns all triples.
     Args:
-        :param page_title:
+        :param page_title: title to crawl.
     Returns:
-        :return:
+        :return: dict with triples and wikibase as key.
     """
     triples = []
     wikipage_triples = {}
@@ -127,19 +128,43 @@ def wiki_infobox_extractor(page_title=None):
 ### FINIAL PREP - Combine WIKI-TEXT and IBOX  ####
 ##################################################
 
-def prep_data(data:dict)->dict:
+def prep_example(data:dict): # -> dict
     """ Maps the infoxes with the corresponding article text.
     :param data: cleanted wikipedia title and text.
     :return: mapped triples (ibox values) and texts.
     """
     # {wikibase: {"triples":triples}} oder {} in case no ibox exists
     train_data = {}
-    for page_title, wikipage_text in data.items():
+    page_title = data["title"] # data[0]
+    wikipage_text = data["text"] # data[1]
+    wikibase = None
+    triples = []
+    # print(f"Processing page: {page_title}")
+    wikibase, triples = wiki_infobox_extractor(page_title)
+    if wikibase != None:
+        train_data[wikibase] = [{"text": wikipage_text}, {"triples": triples}]
+    return train_data
+
+def prep_examples(batch:dict)->list:
+    """ Maps the infoxes with the corresponding article text.
+    :param json_line: cleanted wikipedia title and text.
+    :return: mapped triples (ibox values) and texts.
+    """
+    train_exls = []
+    ts = time()
+    exs = len(batch)
+    for json_line in batch.items():
+        exs-=1
+        print(exs)
+        train_data = {}
+        page_title = json_line[0]
+        wikipage_text = json_line[1]
         wikibase = None
         triples = []
         wikibase, triples = wiki_infobox_extractor(page_title)
         if wikibase != None:
-            train_data.update({wikibase: [{"triples": triples},
-                                          {"text": wikipage_text}]})
-    return train_data
-
+            train_data[wikibase] = [{"text": wikipage_text}, {"triples": triples}]
+            train_exls.append(train_data)
+    duration = (time() - ts)  / 60
+    print(str(duration) + " minutes for prep_examples.")
+    return train_exls
