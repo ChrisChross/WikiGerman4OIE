@@ -61,8 +61,10 @@ def get_infobox_data(in_file, out_file):
 
 def process_batches(batch):
     """ Takes a batch and extracts all matches.
-    :param batch: a dict holding a bunch of items.
-    :return: the training examples from the batch.
+    Args
+        :param batch: a dict holding a bunch of items.
+    Results
+        :return: the training examples from the batch.
     """
     ts = time()
     train_exls = []
@@ -79,9 +81,11 @@ def process_batches(batch):
 
 def get_infobox_data_multi(in_file, out_file):
     """ Same as get_infobox_data - only utilizing multiprocessing.
-    :param in_file: File from where to take the titles and texts for crawling and mapping.
-    :param out_file: Filename/path where to save the created mapped texts and triples.
-    :return: None
+    Args
+        :param in_file: File from where to take the titles and texts for crawling and mapping.
+        :param out_file: Filename/path where to save the created mapped texts and triples.
+    Results
+        :return: None
     """
     data = utils.load_jsonl(in_file)
     data_dict = utils.split_dict_equally(data, N_CORES) # out_dict , preped_data
